@@ -1,4 +1,3 @@
-// script.js
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
@@ -196,9 +195,10 @@ async function activateXR() {
         });
         arRenderer.autoClear = false;
 
-        // CHANGED: Removed 'camera-access' constraint to bypass iOS tracking blocking blocks
+        // CHANGED: Moved 'dom-overlay' and 'anchors' to optionalFeatures[cite: 5]
         arSession = await navigator.xr.requestSession('immersive-ar', {
-            requiredFeatures: ['hit-test', 'dom-overlay', 'anchors'],
+            requiredFeatures: ['hit-test'],
+            optionalFeatures: ['dom-overlay', 'anchors'],
             domOverlay: { root: document.body }
         });
         arSession.updateRenderState({ baseLayer: new XRWebGLLayer(arSession, gl) });
@@ -239,7 +239,6 @@ async function activateXR() {
         arSession.requestAnimationFrame(onXRFrame);
     } catch (error) {
         console.error('Error starting AR session:', error);
-        // CHANGED: Alert context updated to reflect general WebXR compatibility issues
         alert('Error starting AR session. Make sure your browser and shell support WebXR anchors and hit testing: ' + error.message);
         startButton.classList.remove('hidden');
         measurementControls.classList.add('hidden');
@@ -270,9 +269,14 @@ function onARSelect(event) {
         arScene.add(marker);
         tapMarkers.push(marker);
 
-        latestHitTestResult.createAnchor().then(anchor => {
-            tapAnchors.push({ anchor: anchor, index: tapIndex });
-        }).catch(err => console.warn("Failed to create anchor", err));
+        // CHANGED: Added fallback to check if createAnchor is supported before calling it[cite: 5]
+        if (typeof latestHitTestResult.createAnchor === 'function') {
+            latestHitTestResult.createAnchor().then(anchor => {
+                tapAnchors.push({ anchor: anchor, index: tapIndex });
+            }).catch(err => console.warn("Failed to create anchor", err));
+        } else {
+            console.log("Anchors not supported by this viewer, relying on static tracking.");
+        }
 
         if (tapPoints.length === 2) {
             const p0 = tapPoints[0];
@@ -396,7 +400,6 @@ function onXRFrame(time, frame) {
     if (pose) {
         const view = pose.views[0];
         
-        // CHANGED: Purged the raw camera pixel-extraction and custom FBO texture binding pipelines.
         const viewport = session.renderState.baseLayer.getViewport(view);
         arRenderer.setSize(viewport.width, viewport.height, false);
 
@@ -799,7 +802,6 @@ largeHeightSlider.addEventListener('input', (event) => {
     }
 });
 
-// CHANGED: Synchronous local object saving without resolving camera bindings
 saveItemButton.addEventListener('click', () => {
     if (currentMeasuringObject) {
         let itemName = itemNameInput.value.trim() || `Item ${globalItemCounter}`;
@@ -809,7 +811,7 @@ saveItemButton.addEventListener('click', () => {
         savedObjects.push({
             name: itemName,
             weight: itemWeight, 
-            photo: null, // No image capture trace
+            photo: null, 
             width: currentMeasuringObject.scale.x,
             height: currentMeasuringObject.scale.y,
             depth: currentMeasuringObject.scale.z,
