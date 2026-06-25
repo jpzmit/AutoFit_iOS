@@ -195,7 +195,6 @@ async function activateXR() {
         });
         arRenderer.autoClear = false;
 
-        // CHANGED: Moved 'dom-overlay' and 'anchors' to optionalFeatures[cite: 5]
         arSession = await navigator.xr.requestSession('immersive-ar', {
             requiredFeatures: ['hit-test'],
             optionalFeatures: ['dom-overlay', 'anchors'],
@@ -269,7 +268,6 @@ function onARSelect(event) {
         arScene.add(marker);
         tapMarkers.push(marker);
 
-        // CHANGED: Added fallback to check if createAnchor is supported before calling it[cite: 5]
         if (typeof latestHitTestResult.createAnchor === 'function') {
             latestHitTestResult.createAnchor().then(anchor => {
                 tapAnchors.push({ anchor: anchor, index: tapIndex });
@@ -784,6 +782,19 @@ function animateFitting() {
 
 // --- UI Event Listeners ---
 uiPanel.addEventListener('beforexrselect', (event) => {
+    event.preventDefault();
+});
+
+// FIXED: Protect overlays from WebXR touch hijacking
+verticalSliderContainer.addEventListener('beforexrselect', (event) => {
+    event.preventDefault();
+});
+
+step2Mode.addEventListener('beforexrselect', (event) => {
+    event.preventDefault();
+});
+
+fittingMode.addEventListener('beforexrselect', (event) => {
     event.preventDefault();
 });
 
