@@ -1,41 +1,155 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
+    <title>Object Fitter (iOS Optimized)</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AR Measurement (iOS Optimized)</title>
-    <!-- Modern importmap structure for clean dependency resolution -->
+    
+    <!-- Downgraded to Three.js r128 to match iOS WebXR Viewer compatibility -->
     <script type="importmap">
         {
             "imports": {
-                "three": "https://unpkg.com/three@0.165.0/build/three.module.js"
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/",
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
             }
         }
     </script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app-container"></div>
-
-    <!-- Centered startup action -->
-    <button id="startButton">Start AR Measurement</button>
-
-    <!-- Environmental Scanning Onboarding for non-LiDAR tracking -->
-    <div id="scanning-ui" class="hidden">
-        <p class="scan-title">Scanning Environment...</p>
-        <p class="scan-subtitle">Please move your phone slowly to map nearby surfaces.</p>
-        <div id="scan-countdown">10</div>
+    <div id="app-container">
     </div>
 
-    <!-- Measurement Information Display -->
-    <div id="ui" class="hidden">
-        <div id="info">Point at a surface and tap to start measuring</div>
-    </div>
-
-    <!-- Central visual indicator for targeting -->
     <div id="center-crosshair" class="hidden">
         <div class="crosshair-x"></div>
         <div class="crosshair-y"></div>
+    </div>
+
+    <div id="vertical-slider-container" class="hidden">
+        <input type="range" id="largeHeightSlider" orient="vertical" min="0.01" max="0.5" step="0.01" value="0.1">
+        <div id="largeHeightValue">10 cm</div>
+    </div>
+
+    <!-- Full-Screen Step 2 Layout -->
+    <div id="step2-mode" class="hidden">
+        <h2>Step 2: Selection & Packaging</h2>
+        
+        <div id="step2-items">
+            <h3 style="margin-bottom: 5px;">Select Items:</h3>
+            <div id="step2ItemList"></div>
+        </div>
+
+        <div id="step2-package-inputs">
+            <h3 style="margin-bottom: 15px; margin-top: 0;">Package Details</h3>
+            <div class="input-group">
+                <label>Name</label>
+                <input type="text" id="pkgName" value="RC-10">
+            </div>
+            <div class="input-group">
+                <label>Length (cm)</label>
+                <input type="number" id="pkgLength" value="26">
+            </div>
+            <div class="input-group">
+                <label>Width (cm)</label>
+                <input type="number" id="pkgWidth" value="26">
+            </div>
+            <div class="input-group">
+                <label>Depth (cm)</label>
+                <input type="number" id="pkgDepth" value="25">
+            </div>
+        </div>
+        
+        <div class="step2-actions">
+            <button id="goToFittingButton">Fitment Analysis</button>
+            <button id="exportJSONButton" style="background: #4CAF50;">Export JSON</button>
+            <button id="backToARFromStep2" class="danger">Back to AR</button>
+        </div>
+    </div>
+
+    <!-- Full-Screen Fitting Mode (Step 3) -->
+    <div id="fitting-mode" class="hidden">
+        <div id="fitting-canvas-container">
+        </div>
+        
+        <div id="fitting-ui">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2 style="margin: 0; color: #4fc3f7;">3D Fitting View</h2>
+            </div>
+            
+            <div id="packing-status">Analyzing fitment...</div>
+            
+            <div id="fitting-container-inputs">
+                <h3 style="margin-top: 10px; margin-bottom: 10px; color: #ccc; font-size: 16px;">Container Dimensions (m)</h3>
+                <div class="input-group">
+                    <label>Length</label>
+                    <input type="number" id="containerLength" value="1.0" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>Width</label>
+                    <input type="number" id="containerWidth" value="1.0" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>Height</label>
+                    <input type="number" id="containerHeight" value="1.0" step="0.1">
+                </div>
+            </div>
+            
+            <div class="step2-actions">
+                <button id="updateContainerButton">Repack Container</button>
+                <button id="backToARButton" class="danger">Back to AR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AR Mode UI Panel -->
+    <div id="ui-panel">
+        <div id="ar-mode">
+            <h2 id="ar-header">Measure Object (AR)</h2>
+            
+            <div style="margin-bottom: 15px; padding: 0;">
+                <label style="color: #4fc3f7; font-weight: bold; font-size: 16px;">Restaurant Name:</label>
+                <input type="text" id="restaurantNameInput" placeholder="Enter Restaurant Name" style="width: 100%; padding: 10px; border-radius: 6px; border: none; margin-top: 5px; font-size: 16px; box-sizing: border-box; background: #333; color: white;">
+            </div>
+
+            <button id="startButton">Start AR Measurement</button>
+
+            <div id="scanning-ui" class="hidden">
+                <p class="scan-title">Scanning Environment...</p>
+                <p class="scan-subtitle">Please move your phone slowly to map the ground.</p>
+                <div id="scan-countdown">10</div>
+            </div>
+
+            <div id="measurement-controls" class="hidden">
+                <div id="instruction-text">
+                    <p style="margin-top:0;">Tap 1: Origin<br>Tap 2: Front Edge<br>Tap 3: Side Edge</p>
+                </div>
+    
+                <div id="tap-indicator">
+                    <p id="tap-counter">Taps: 0 / 3</p>
+                </div>
+
+                <div id="adjustment-controls" class="hidden">
+                    <p style="margin-top:0; color:#4fc3f7; font-weight:bold;">Finalize Object:</p>
+                    <label>Name: <input type="text" id="itemNameInput" value="Item 1" style="width: 100px; margin-bottom: 5px;"></label>
+                    <label>Weight (g): <input type="number" id="itemWeightInput" value="0" style="width: 80px; margin-bottom: 5px;"></label>
+                    <label><input type="checkbox" id="nonRotationalCheck"> Non-Rotational</label>
+                    <button id="saveItemButton">Save Item</button>
+                    <button id="cancelItemButton" class="danger">Cancel</button>
+                </div>
+            </div>
+
+            <div id="saved-items">
+                <h3 style="margin-bottom: 5px;">Saved Items:</h3>
+                <ul id="savedItemList" style="margin-top: 0; padding-left: 20px;"></ul>
+                
+                <div id="bottom-actions">
+                    <button id="clearSavedButton" class="hidden danger">Clear All</button>
+                    <button id="nextStep2Button" class="hidden">Next</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script type="module" src="script.js"></script>
