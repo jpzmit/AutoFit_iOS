@@ -1,296 +1,105 @@
-body { margin: 0; overflow: hidden; display: flex; flex-direction: column; height: 100dvh; font-family: sans-serif; background-color: #111; }
-        
-#app-container { flex-grow: 1; position: relative; }
-canvas { display: block; width: 100%; height: 100%; }
+body { 
+    margin: 0; 
+    overflow: hidden; 
+    font-family: sans-serif; 
+    background-color: #000; 
+    height: 100dvh;
+    user-select: none;
+}
 
-#ui-panel { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 10px; border-radius: 8px; z-index: 10; max-height: 90%; overflow-y: auto; min-width: 200px; touch-action: none; }
-#ui-panel h2 { margin-top: 0; }
-#ui-panel label { display: block; margin-top: 8px; font-size: 14px;}
+#app-container { 
+    width: 100%; 
+    height: 100%; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+}
 
-#ui-panel button { margin-top: 10px; padding: 8px 15px; cursor: pointer; background: #4285f4; border: none; color: white; border-radius: 4px; }
-#ui-panel button.danger { background: #e53935; }
-#ui-panel input[type="number"], #ui-panel input[type="text"] { width: 60px; }
+#ui {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    pointer-events: none;
+    z-index: 10;
+}
 
-/* Centered, large Start Button */
+#info {
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-size: 1.1em;
+    display: inline-block;
+    border: 1px solid #444;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
 #startButton {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    padding: 24px 48px !important;
-    font-size: 2em;
-    z-index: 100;
-    border-radius: 12px !important;
-}
-
-#saved-items { margin-top: 15px; border-top: 1px solid grey; padding-top: 10px; }
-
-/* 50% larger list items */
-.item-list-item { background-color: rgba(255,255,255,0.1); padding: 7.5px; margin-bottom: 5px; border-radius: 4px; font-size: 21px; }
-
-#fitting-container-inputs { margin-top: 15px; border-top: 1px solid grey; padding-top: 10px; }
-
-.hidden { display: none !important; }
-#tap-counter { font-weight: bold; color: #4fc3f7; margin: 5px 0; }
-
-/* Bottom actions layout & 50% larger buttons */
-#bottom-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 20px;
-    width: 100%;
-}
-#clearSavedButton, #nextStep2Button {
-    padding: 12px 22.5px !important;
-    font-size: 21px !important;
-    margin-top: 0 !important;
-}
-
-/* --- Vertical Slider Styles --- */
-#vertical-slider-container {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 50vh; 
-    z-index: 20;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: rgba(0,0,0,0.7);
-    padding: 20px 15px;
-    border-radius: 12px;
-    touch-action: none;
-}
-
-#vertical-slider-container input[type=range][orient=vertical] {
-    writing-mode: bt-lr; /* IE */
-    -webkit-appearance: slider-vertical; /* WebKit/iOS */
-    width: 20px;
-    height: 100%;
-    padding: 0;
-    margin: 0;
-}
-
-#largeHeightValue {
-    color: #4fc3f7;
-    margin-top: 15px;
+    padding: 20px 40px;
+    font-size: 1.5rem;
     font-weight: bold;
-    font-size: 16px;
+    z-index: 100;
+    background: #4285f4;
+    border: none;
+    color: white;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(66, 133, 244, 0.4);
 }
 
-/* --- Center the Finalize Object controls above the keyboard --- */
-#adjustment-controls {
+#scanning-ui {
     position: fixed;
-    top: 5%; 
+    top: 20%;
     left: 50%;
-    transform: translateX(-50%); 
-    background: rgba(20, 20, 20, 0.95);
-    padding: 20px;
-    border-radius: 12px;
-    z-index: 1000;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.8);
-    border: 1px solid #444;
+    transform: translateX(-50%);
     text-align: center;
+    background: rgba(20, 20, 20, 0.9);
+    padding: 24px;
+    border-radius: 16px;
+    border: 2px solid #ffeb3b;
+    z-index: 99;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
     width: 80%;
     max-width: 320px;
 }
 
-#adjustment-controls p { font-size: 20px; margin-bottom: 15px; }
-
-#adjustment-controls label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 15px;
-    font-size: 18px;
-}
-
-#adjustment-controls input[type="text"] {
-    width: 140px !important;
-    padding: 10px;
-    font-size: 18px;
-    margin-left: 10px;
-    border-radius: 6px;
-    border: none;
-}
-
-#adjustment-controls input[type="number"] {
-    width: 100px !important;
-    padding: 10px;
-    font-size: 18px;
-    margin-left: 10px;
-    border-radius: 6px;
-    border: none;
-}
-
-#adjustment-controls input[type="checkbox"] { transform: scale(1.5); margin-right: 10px; }
-
-#adjustment-controls button {
-    padding: 12px 5px !important;
-    font-size: 16px !important;
-    margin: 5px;
-    width: calc(50% - 15px);
-    border-radius: 8px;
-}
-
-/* --- Step 2 Full Screen Styles --- */
-#step2-mode {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #111; 
-    z-index: 1000;
-    padding: 20px;
-    box-sizing: border-box;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    color: white;
-}
-#step2-mode h2 { color: #4fc3f7; margin-top: 10px; font-size: 24px; flex-shrink: 0; }
-
-#step2-items { flex-grow: 1; margin-bottom: 20px; display: flex; flex-direction: column; min-height: 0; }
-#step2ItemList { font-size: 16px; margin-top: 10px; flex-grow: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 10px; }
-
-.step2-list-item { background: rgba(255,255,255,0.1); padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; align-items: center; cursor: pointer; flex-shrink: 0;}
-.step2-list-item input { transform: scale(1.5); margin-right: 15px; }
-
-#step2-package-inputs { border-top: 1px solid #444; padding-top: 20px; margin-bottom: 20px; flex-shrink: 0;}
-.input-group { margin-bottom: 15px; }
-.input-group label { display: block; font-size: 14px; margin-bottom: 5px; color: #ccc; }
-.input-group input { width: 100%; padding: 15px; border: none; border-radius: 6px; background: #333; color: white; font-size: 16px; box-sizing: border-box; }
-
-.step2-actions { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; flex-shrink: 0;}
-.step2-actions button { padding: 18px; font-size: 18px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; width: 100%; }
-#goToFittingButton { background: #4285f4; }
-#backToARFromStep2 { background: #e53935; }
-
-/* --- Step 3 Full Screen Split Layout --- */
-#fitting-mode {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100dvh;
-    background-color: #111; 
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; 
-    color: white;
-}
-
-#fitting-canvas-container {
-    width: 100%;
-    height: calc(50vh - 15px); 
-    background-color: #000;
-    position: relative;
-    flex-shrink: 0;
-}
-
-#fitting-ui {
-    width: 100%;
-    height: calc(50vh - 15px); 
-    background-color: #1a1a1a;
-    padding: 20px;
-    box-sizing: border-box;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-}
-
-#fitting-ui .input-group {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #333;
-    padding: 10px 15px;
-    border-radius: 6px;
-    margin-bottom: 8px;
-}
-#fitting-ui .input-group label {
-    margin: 0;
-    font-size: 16px;
-    color: white;
-}
-#fitting-ui .input-group input {
-    width: 80px;
-    padding: 8px;
-    border: none;
-    border-radius: 4px;
-    background: #444;
-    color: white;
-    font-size: 16px;
-    text-align: right;
-}
-
-#fitting-ui .step2-actions {
-    margin-top: auto; 
-    padding-top: 15px;
-}
-
-/* --- Auto-Packing Status Banner --- */
-#packing-status {
-    font-size: 18px;
-    font-weight: bold;
-    text-align: center;
-    margin: 10px 0;
-    padding: 10px;
-    border-radius: 6px;
-    background: rgba(0, 0, 0, 0.5);
-}
-.status-success { color: #4CAF50; border: 1px solid #4CAF50; }
-.status-fail { color: #e53935; border: 1px solid #e53935; }
-#updateContainerButton, 
-#backToARButton {
-    background: blue; 
-}
-
-/* --- Scanning UI --- */
-#scanning-ui {
-    text-align: center;
-    background: rgba(20, 20, 20, 0.9);
-    padding: 20px;
-    border-radius: 12px;
-    border: 2px solid #ffeb3b;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-}
-
 .scan-title { 
-    font-size: 22px; 
+    font-size: 20px; 
     color: #ffeb3b; 
     font-weight: bold; 
-    margin: 0 0 10px 0; 
+    margin: 0 0 8px 0; 
 }
 
 .scan-subtitle { 
-    font-size: 16px; 
-    margin: 0 0 15px 0; 
+    font-size: 14px; 
+    margin: 0 0 16px 0; 
     color: #eee;
+    line-height: 1.4;
 }
 
 #scan-countdown { 
-    font-size: 52px; 
+    font-size: 48px; 
     font-weight: bold; 
     color: white; 
-    margin: 0; 
 }
 
-/* --- Center Crosshair --- */
 #center-crosshair {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 30px;
-    height: 30px;
-    pointer-events: none; /* 确保它不会阻挡点击事件 */
-    z-index: 999;
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+    z-index: 90;
 }
 
 .crosshair-x {
@@ -299,7 +108,7 @@ canvas { display: block; width: 100%; height: 100%; }
     left: 0;
     width: 100%;
     height: 2px;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.7);
     transform: translateY(-50%);
 }
 
@@ -309,6 +118,8 @@ canvas { display: block; width: 100%; height: 100%; }
     left: 50%;
     width: 2px;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.7);
     transform: translateX(-50%);
 }
+
+.hidden { display: none !important; }
