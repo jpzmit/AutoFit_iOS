@@ -501,6 +501,9 @@ function resetUIForNextMeasurement() {
 
 // --- Step 2 Event Listeners & Logic ---
 nextStep2Button.addEventListener('click', () => {
+    if (arSession) {
+        arSession.end();
+    }
     uiPanel.classList.add('hidden'); 
     step2Mode.classList.remove('hidden'); 
     populateStep2List();
@@ -509,6 +512,10 @@ nextStep2Button.addEventListener('click', () => {
 backToARFromStep2.addEventListener('click', () => {
     step2Mode.classList.add('hidden'); 
     uiPanel.classList.remove('hidden'); 
+    
+    arMode.classList.remove('hidden');
+    startButton.classList.remove('hidden');
+    measurementControls.classList.add('hidden');
 });
 
 // --- JSON Export Logic ---
